@@ -321,10 +321,10 @@ if __name__ == '__main__':
         img = cv2.resize(img, (configs.output_width, configs.output_width))
 
         # comment out this part to plot the detections
-        #     cv2.imshow('Image', out_img)
-        #     cv2.imshow('BEV Map', bev_map)
-        #     cv2.waitKey(0)
-        #     cv2.destroyAllWindows()
+        # cv2.imshow('Image', out_img)
+        # cv2.imshow('BEV Map', bev_map)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         stored_detections = []
         for i in range(detections[1].shape[0]):
