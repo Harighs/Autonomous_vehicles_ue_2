@@ -8,10 +8,7 @@
 
 import pickle
 import argparse
-import sys
 import os
-import time
-import warnings
 import torch
 from torch.utils.data import Dataset, DataLoader
 from models.model_utils import create_model
@@ -23,12 +20,10 @@ import dataset_tools
 from plot_tools import plot_tracks
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-import PIL.Image as Image
-from data_process.kitti_bev_utils import drawRotatedBox
-from sklearn.metrics import precision_recall_curve, auc
-from shapely.geometry import Polygon
 from kalman_filter import KalmanFilter3D
+from io import BytesIO
+import matplotlib.pyplot as plt
+
 
 
 def parse_test_configs():
@@ -289,6 +284,7 @@ if __name__ == '__main__':
     model = model.to(device=configs.device)
 
     print('Loaded weights from {}\n'.format(configs.pretrained_path))
+
     # video_writer = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc(*'MP4V'), 1, (640, 480))
 
     precision_list = []
@@ -324,6 +320,7 @@ if __name__ == '__main__':
         out_img = merge_rgb_to_bev(img, bev_map, output_width=configs.output_width)
         img = cv2.resize(img, (configs.output_width, configs.output_width))
 
+        # comment out this part to plot the detections
         #     cv2.imshow('Image', out_img)
         #     cv2.imshow('BEV Map', bev_map)
         #     cv2.waitKey(0)
@@ -342,10 +339,11 @@ if __name__ == '__main__':
         img_arr = dataset_tools.decode_img(camera)
         lidar = frame.lidars[0]
 
-        # tracks = [Track(scaled_coords) for scaled_coords in stored_detections if 0 < scaled_coords[0] < 55]
-        # tracks = [Track(detection) for detection in lidar.detections if 0 < detection.pos[0] < 55]
-        # plot_tracks(img_arr, tracks, [], lidar.detections, camera)
-        # plt.show()
+        # comment out this part to plot show the detections with
+        tracks = [Track(scaled_coords) for scaled_coords in stored_detections if 0 < scaled_coords[0] < 55]
+        plot_tracks(img_arr, tracks, [], lidar.detections, camera)
+        # to make the plot visible for every frame
+        #plt.show()
 
         # sort the stored detections based on the x coordinate
         stored_detections.sort(key=lambda x: x[0])
@@ -389,39 +387,12 @@ if __name__ == '__main__':
             updated_state, _ = kf.update(measurement)
             # print("Updated State:", updated_state)
 
-        # for thresh in thresholds:
-        #     precision_at_thresh = []
-        #     recall_at_thresh = []
-        #     for i in range(0, len(lidar_detection_list)):
-        #         evaluation = evaluate_sequential_detections(lidar_detection_list, stored_detections, iou_threshold=thresh)
-        #         precision_at_thresh.append(evaluation['precision'])
-        #         recall_at_thresh.append(evaluation['recall'])
-        #     all_precision.append(np.mean(precision_at_thresh))
-        #     all_recall.append(np.mean(recall_at_thresh))
-
-    # # do the reverse sorting
-    # sorted_indices = sorted(range(len(all_recall)), key=lambda i: all_recall[i], reverse=False)
-    # sorted_recall = [all_recall[i] for i in sorted_indices]
-    # sorted_precision = [all_precision[i] for i in sorted_indices]
-    #
-    # auc_score = auc(sorted_recall, sorted_precision)
-    # print('AUC:', auc_score)
-    #
-    # plt.plot(sorted_recall, sorted_precision)
-    # plt.xlabel('Recall')
-    # plt.ylabel('Precision')
-    # plt.title('Precision-Recall Curve')
-    # plt.show()
-
     print('Precision:', sum(precision_list) / len(precision_list))
     print('Recall:', sum(recall_list) / len(recall_list))
     print('F1 Score:', sum(f1_score_list) / len(f1_score_list))
     print('Average IoU:', sum(ious_list) / len(ious_list))
 
-    # break
-    #
-    #     from io import BytesIO
-    #
+
     #     # Save the plot to a buffer
     #     buf = BytesIO()
     #     plt.savefig(buf, format='png')
