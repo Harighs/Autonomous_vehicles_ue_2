@@ -375,14 +375,14 @@ if __name__ == '__main__':
         kf.x = np.array([[0], [0], [0], [0], [0], [0]])  # [x, y, z, vx, vy, vz]
         kf.P = np.eye(6) * 1000  # High initial uncertainty
 
-        # Simulated measurements (position only)
+        # measurements (position only)
         measurements = [
             np.array([[x], [y], [z]]).astype(np.float64) for x, y, z, _, _, _, _ in stored_detections
         ]
 
         # Process each measurement
         for measurement in measurements:
-            _, _ = kf.predict()  # You might only want to use predictions if needed for interim processing
+            _, _ = kf.predict()
             # print('before update', measurement)
             updated_state, _ = kf.update(measurement)
             # print("Updated State:", updated_state)

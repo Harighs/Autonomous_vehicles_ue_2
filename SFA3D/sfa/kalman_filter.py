@@ -1,7 +1,11 @@
+##########################################################
+####  Author: Ariharasudhan Muthusami
+####  Email: ariharasudhan.muthusami@gmail.com
+####  Date: 28/4/2024
+##########################################################
+
+
 import numpy as np
-
-
-
 class KalmanFilter3D:
     '''Kalman filter class for 3D tracking'''
 
